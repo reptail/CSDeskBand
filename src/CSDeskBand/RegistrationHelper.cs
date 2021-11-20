@@ -60,7 +60,7 @@
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"Error while trying to show deskband: {e.ToString()}");
+                        Console.WriteLine($"Error while trying to show deskband: {e}");
                     }
                     finally
                     {

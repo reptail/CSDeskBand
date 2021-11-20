@@ -266,11 +266,11 @@ namespace CSDeskBand.Interop
     public interface ITrayDeskband
     {
         [PreserveSig]
-        int ShowDeskBand([In, MarshalAs(UnmanagedType.Struct)] ref Guid clsid);
+        int ShowDeskBand(ref Guid clsid);
         [PreserveSig]
-        int HideDeskBand([In, MarshalAs(UnmanagedType.Struct)] ref Guid clsid);
+        int HideDeskBand(ref Guid clsid);
         [PreserveSig]
-        int IsDeskBandShown([In, MarshalAs(UnmanagedType.Struct)] ref Guid clsid);
+        int IsDeskBandShown( ref Guid clsid);
         [PreserveSig]
         int DeskBandRegistrationChanged();
     }

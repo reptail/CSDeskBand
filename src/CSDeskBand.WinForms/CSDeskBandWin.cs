@@ -1,98 +1,40 @@
-﻿#pragma warning disable 1591
-#if DESKBAND_WPF
-namespace CSDeskBand
+﻿namespace CSDeskBand
 {
+    using CSDeskBand.Interop;
     using System;
     using System.Runtime.InteropServices;
-    using System.Windows.Interop;   
-    using CSDeskBand.Interop;
-    using System.Windows.Documents;
-    using System.Windows.Media;
-    using System.Windows;
+    using System.Windows.Forms;
 
     /// <summary>
-    /// Wpf implementation of <see cref="ICSDeskBand"/>
+    /// Winforms implementation of <see cref="ICSDeskBand"/>.
     /// The deskband should also have these attributes <see cref="ComVisibleAttribute"/>, <see cref="GuidAttribute"/>, <see cref="CSDeskBandRegistrationAttribute"/>.
     /// </summary>
-    public abstract class CSDeskBandWpf : ICSDeskBand, IDeskBandProvider
+    public abstract class CSDeskBandWin : ICSDeskBand, IDeskBandProvider
     {
         private readonly CSDeskBandImpl _impl;
-        private readonly AdornerDecorator _rootVisual;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CSDeskBandWpf"/> class.
+        /// Initializes a new instance of the <see cref="CSDeskBandWin"/> class.
         /// </summary>
-        public CSDeskBandWpf()
+        public CSDeskBandWin()
         {
             Options.Title = RegistrationHelper.GetToolbarName(GetType());
-
-            var hwndSourceParameters = new HwndSourceParameters("Deskband host for wpf")
-            {
-                TreatAsInputRoot = true,
-                WindowStyle = unchecked((int)(WindowStyles.WS_VISIBLE | WindowStyles.WS_POPUP)),
-                HwndSourceHook = HwndSourceHook,
-            };
-
-            HwndSource = new HwndSource(hwndSourceParameters);
-            _rootVisual = new AdornerDecorator();
-            HwndSource.RootVisual = _rootVisual;
-            HwndSource.CompositionTarget.BackgroundColor = Colors.Transparent;
-
             _impl = new CSDeskBandImpl(this);
-
             _impl.Closed += (o, e) => DeskbandOnClosed();
             TaskbarInfo = _impl.TaskbarInfo;
         }
 
-        /// <summary>
-        /// The <see cref="System.Windows.Interop.HwndSourceHook"/>. for <see cref="HwndSource"/>.
-        /// </summary>
-        /// <param name="hwnd"></param>
-        /// <param name="msg"></param>
-        /// <param name="wparam"></param>
-        /// <param name="lparam"></param>
-        /// <param name="handled"></param>
-        /// <returns></returns>
-        protected virtual IntPtr HwndSourceHook(IntPtr hwnd, int msg, IntPtr wparam, IntPtr lparam, ref bool handled)
+        [ComRegisterFunction]
+        private static void Register(Type t)
         {
-            switch (msg)
-            {
-                // Handle hit testing against transparent areas
-                case (int)WindowMessages.WM_NCHITTEST:
-                    var mouseX = LowWord(lparam);
-                    var mouseY = HighWord(lparam);
-                    var relativepoint = HwndSource.RootVisual.PointFromScreen(new Point(mouseX, mouseY));
-                    var result = VisualTreeHelper.HitTest(HwndSource.RootVisual, relativepoint);
-                    if (result?.VisualHit != null)
-                    {
-                        handled = true;
-                        return new IntPtr((int)HitTestMessageResults.HTCLIENT);
-                    }
-                    else
-                    {
-                        handled = true;
-                        return new IntPtr((int)HitTestMessageResults.HTTRANSPARENT);
-                    }
-            }
-
-            handled = false;
-            return IntPtr.Zero;
+            RegistrationHelper.Register(t);
         }
 
-        protected static int LowWord(IntPtr value)
+        [ComUnregisterFunction]
+        private static void Unregister(Type t)
         {
-            return unchecked((short)(long)value);
+            RegistrationHelper.Unregister(t);
         }
-
-        protected static int HighWord(IntPtr value)
-        {
-            return unchecked((short)((long)value >> 16));
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Windows.Interop.HwndSource"/> that hosts the wpf content.
-        /// </summary>
-        protected HwndSource HwndSource { get; }
 
         /// <summary>
         /// Gets the taskbar information
@@ -100,9 +42,9 @@ namespace CSDeskBand
         protected TaskbarInfo TaskbarInfo { get; }
 
         /// <summary>
-        /// Gets main UI element for the deskband.
+        /// Gets the main control for the deskband.
         /// </summary>
-        protected abstract UIElement UIElement { get; }
+        protected abstract Control Control { get; }
 
         /// <summary>
         /// Gets the options for this deskband.
@@ -113,18 +55,7 @@ namespace CSDeskBand
         /// <summary>
         /// Gets the handle
         /// </summary>
-        public IntPtr Handle
-        {
-            get
-            {
-                if (_rootVisual.Child == null)
-                {
-                    _rootVisual.Child = UIElement;
-                }
-
-                return HwndSource.Handle;
-            }
-        }
+        public IntPtr Handle => Control.Handle;
 
         /// <summary>
         /// Gets the deskband guid
@@ -133,12 +64,12 @@ namespace CSDeskBand
 
         public bool HasFocus
         {
-            get => UIElement?.IsKeyboardFocusWithin ?? false;
+            get => Control?.ContainsFocus ?? false;
             set
             {
                 if (value)
                 {
-                    UIElement?.Focus();
+                    Control?.Focus();
                 }
             }
         }
@@ -264,7 +195,7 @@ namespace CSDeskBand
             return _impl.Save(pStm, fClearDirty);
         }
 
-        public int UIActivateIO(int fActivate, ref Interop.MSG msg)
+        public int UIActivateIO(int fActivate, ref MSG msg)
         {
             return _impl.UIActivateIO(fActivate, ref msg);
         }
@@ -274,22 +205,9 @@ namespace CSDeskBand
             return _impl.HasFocusIO();
         }
 
-        public int TranslateAcceleratorIO(ref Interop.MSG msg)
+        public int TranslateAcceleratorIO(ref MSG msg)
         {
             return _impl.TranslateAcceleratorIO(ref msg);
         }
-
-        [ComRegisterFunction]
-        private static void Register(Type t)
-        {
-            RegistrationHelper.Register(t);
-        }
-
-        [ComUnregisterFunction]
-        private static void Unregister(Type t)
-        {
-            RegistrationHelper.Unregister(t);
-        }
     }
 }
-#endif
