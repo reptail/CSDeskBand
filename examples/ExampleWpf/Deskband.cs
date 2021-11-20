@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using CSDeskBand;
+﻿using CSDeskBand;
 using CSDeskBand.ContextMenu;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace ExampleWpf
 {
@@ -20,9 +17,9 @@ namespace ExampleWpf
             Options.ContextMenuItems = ContextMenuItems;
         }
 
-        protected override UIElement UIElement => new UserControl1();
+        protected override UIElement UIElement => new Hello();
 
-        private List<DeskBandMenuItem> ContextMenuItems
+        private static List<DeskBandMenuItem> ContextMenuItems
         {
             get
             {
