@@ -23,7 +23,7 @@
     /// <summary>
     /// A context menu seperator.
     /// </summary>
-    internal sealed class DeskBandMenuSeparator : DeskBandMenuItem
+    public sealed class DeskBandMenuSeparator : DeskBandMenuItem
     {
         private MENUITEMINFO _menuiteminfo;
 
@@ -44,7 +44,7 @@
     /// <summary>
     /// A context menu item that can be clicked.
     /// </summary>
-    internal sealed class DeskBandMenuAction : DeskBandMenuItem
+    public sealed class DeskBandMenuAction : DeskBandMenuItem
     {
         private MENUITEMINFO _menuiteminfo;
 
@@ -122,7 +122,7 @@
     /// <summary>
     /// A sub menu item that can contain other <see cref="DeskBandMenuItem"/>.
     /// </summary>
-    internal sealed class DeskBandMenu : DeskBandMenuItem
+    public sealed class DeskBandMenu : DeskBandMenuItem
     {
         private IntPtr _menu;
         private MENUITEMINFO _menuiteminfo;
